@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Level {
+  id        String        @id @default(cuid())
+  slug      String        @unique
+  name      String
+  tier      String
+  sortOrder Int
+  hasTypes  Boolean       @default(false)
+  types     ContentType[]
+  cards     Flashcard[]
+}
+
+model ContentType {
+  id        String      @id @default(cuid())
+  slug      String
+  name      String
+  sortOrder Int
+  levelId   String
+  level     Level       @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  cards     Flashcard[]
+
+  @@unique([levelId, slug])
+}
+
+model Flashcard {
+  id        String       @id @default(cuid())
+  hebrew    String
+  english   String
+  sortOrder Int
+  levelId   String
+  typeId    String?
+  level     Level        @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  type      ContentType? @relation(fields: [typeId], references: [id], onDelete: Cascade)
+
+  @@index([levelId, typeId])
+}
